@@ -44,10 +44,15 @@ class customConfigParser(configparser.RawConfigParser):
         optname = None
         indent_level = 0
         e: configparser.Error | None = None
+        # Python 3.14+ replaced several private comment-prefix attributes with _comments.
+        # We intentionally preserve comments (comment_prefixes=()), so defaulting to empty
+        # tuples keeps behavior identical across Python versions.
+        inline_comment_prefixes = tuple(getattr(self, "_inline_comment_prefixes", ()))
+        comment_prefixes = tuple(getattr(self, "_comment_prefixes", ()))
         for lineno, line in enumerate(fp, start=1):
             comment_start: int | None = sys.maxsize
             # Strip inline comments
-            inline_prefixes = dict.fromkeys(self._inline_comment_prefixes, -1)
+            inline_prefixes = dict.fromkeys(inline_comment_prefixes, -1)
             while comment_start == sys.maxsize and inline_prefixes:
                 next_prefixes = {}
                 for prefix, index in inline_prefixes.items():
@@ -59,7 +64,7 @@ class customConfigParser(configparser.RawConfigParser):
                         comment_start = min(comment_start, line_index)
                 inline_prefixes = next_prefixes
             # Strip full line comments
-            for prefix in self._comment_prefixes:
+            for prefix in comment_prefixes:
                 if line.strip().startswith(prefix):
                     comment_start = 0
                     break
