@@ -39,7 +39,7 @@ class ChooseGameWindow(ttk.Toplevel):
             choose_game_frame_2, text="Bethini Pie", font=("Segoe UI", 20))
         label_Pie = ttk.Label(
             choose_game_frame_2,
-            text="Performance INI Editor\nby DoubleYou",
+            text="性能 INI 编辑器\n作者：DoubleYou",
             font=("Segoe UI", 15),
             justify=CENTER,
             style=WARNING,
@@ -53,7 +53,7 @@ class ChooseGameWindow(ttk.Toplevel):
         )
 
         choose_game_label = ttk.Label(
-            choose_game_frame_2, text="Choose Game", font=("Segoe UI", 15))
+            choose_game_frame_2, text="选择游戏", font=("Segoe UI", 15))
 
         self.choose_game_tree = ttk.Treeview(
             choose_game_frame_2, selectmode=BROWSE, show="tree", columns=("Name"))
@@ -66,14 +66,14 @@ class ChooseGameWindow(ttk.Toplevel):
             foreground=STANDARD_THEMES[master.theme_name.get()]["colors"].get("inputfg"))
         choose_game_button = ttk.Button(
             choose_game_frame_2,
-            text="Select Game",
+            text="选择游戏",
             style="choose_game_button.TButton",
             command=self.on_choose_game,
         )
 
         choose_game_tip = ttk.Label(
             choose_game_frame_2,
-            text="Tip: You can change the game at any time\nby going to File > Choose Game.",
+            text="提示：你可以随时在“文件 > 选择游戏”中切换游戏。",
             font=("Segoe UI", 12),
             justify=CENTER,
             style="success",
@@ -85,7 +85,7 @@ class ChooseGameWindow(ttk.Toplevel):
 
         preferences_frame = ttk.Frame(choose_game_frame_2)
 
-        theme_label = ttk.Label(preferences_frame, text="Theme:")
+        theme_label = ttk.Label(preferences_frame, text="主题：")
         theme_names = list(ttk.Style().theme_names())
         theme_mb = ttk.Menubutton(
             preferences_frame, textvariable=master.theme_name)

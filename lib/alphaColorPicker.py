@@ -22,7 +22,7 @@ class AlphaColorChooserDialog(ColorChooserDialog):
     """This class creates a color chooser dialog with an alpha slider."""
 
     def __init__(
-        self, parent=None, title="Color Chooser", initialcolor=None, initialalpha=None
+        self, parent=None, title="颜色选择器", initialcolor=None, initialalpha=None
     ):
         super().__init__(parent, title, initialcolor)
         self.alpha = initialalpha
@@ -32,7 +32,7 @@ class AlphaColorChooserDialog(ColorChooserDialog):
         self.colorchooser.pack(fill=BOTH, expand=YES)
 
         self.alpha_frame = ttk.Frame(master)
-        self.alpha_label = ttk.Label(self.alpha_frame, text="Alpha:")
+        self.alpha_label = ttk.Label(self.alpha_frame, text="透明度：")
         self.alpha_var = ttk.IntVar(self)
         self.alpha_slider = Scalar(
             self.alpha_frame, from_=0, to=255, orient=HORIZONTAL, variable=self.alpha_var
@@ -47,7 +47,7 @@ class AlphaColorChooserDialog(ColorChooserDialog):
             self.alpha_spinbox.pack(fill=BOTH, expand=NO, side=LEFT)
 
     def on_button_press(self, button):
-        if button.cget("text") == "OK":
+        if button.cget("text") in {"OK", "确定"}:
             values = self.colorchooser.get_variables()
             self.alpha = self.alpha_var.get()
             self._result = ColorChoice(
@@ -65,7 +65,7 @@ class AlphaColorPicker(Querybox):
 
     def get_color(
         parent=None,
-        title="Color Chooser",
+        title="颜色选择器",
         initialcolor=None,
         initialalpha=None,
         **kwargs

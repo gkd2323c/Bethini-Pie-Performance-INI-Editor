@@ -61,6 +61,7 @@ from lib.ModifyINI import ModifyINI
 from lib.scalar import Scalar
 from lib.tooltips import Hovertip
 from lib.type_helpers import *
+from lib.i18n import translate_ui_text
 
 if TYPE_CHECKING:
     from collections.abc import Callable
@@ -201,8 +202,12 @@ class bethini_app(ttk.Window):
 
         self.statusbar_text = tk.StringVar(self)
         self.statusbar = ttk.Entry(self.hsbframeholder, textvariable=self.statusbar_text)
-        
-        self.pw = ttk.Label(self.hsbframeholder, text="Loading... Please Wait... ")
+
+        self.advanced_tab_name = translate_ui_text("Advanced")
+        self.log_tab_name = translate_ui_text("Log")
+        self.custom_choice_label = translate_ui_text("Custom")
+
+        self.pw = ttk.Label(self.hsbframeholder, text="正在加载，请稍候...")
         self.p = ttk.Progressbar(self.hsbframeholder, orient=HORIZONTAL, mode=INDETERMINATE)
 
         self.menu_frame = MenuBar(self)
@@ -245,7 +250,7 @@ class bethini_app(ttk.Window):
         self.pw.destroy()
         self.p.stop()
         self.p.destroy()
-        self.pw = ttk.Label(self.hsbframeholder, text="Loading... Please Wait... ")
+        self.pw = ttk.Label(self.hsbframeholder, text="正在加载，请稍候...")
         self.p = ttk.Progressbar(self.hsbframeholder, orient=HORIZONTAL, mode=INDETERMINATE)
 
     def sme(self, message: str, *, exception: Exception | None = None) -> None:
@@ -387,7 +392,7 @@ class bethini_app(ttk.Window):
         setting: BethiniSetting = self.tab_dictionary[tab_id]["LabelFrames"][label_frame_id]["SettingFrames"][setting_frame_id][setting_id]
 
         # Fetches the tooltip description.
-        tooltip_description = setting.get("tooltip", "No description available.")
+        tooltip_description = translate_ui_text(setting.get("tooltip", "No description available."))
 
         tooltip_wrap_length = setting.get("tooltip_wrap_length", 200)
 
@@ -428,7 +433,7 @@ class bethini_app(ttk.Window):
             tooltip_INI_targets = None
 
         setting_name = setting.get("Name")
-        photo_for_setting: Path | None = exedir / "apps" / GAME_NAME / "images" / f"{setting_name}.jpg"
+        photo_for_setting: Path | None = resource_dir / "apps" / GAME_NAME / "images" / f"{setting_name}.jpg"
         if not (photo_for_setting and photo_for_setting.is_file()):
             photo_for_setting = None
 
@@ -447,17 +452,17 @@ class bethini_app(ttk.Window):
         try:
             if forced or always_select_game != "0" or not choose_game_var:
                 self.withdraw()
-                choose_game_window = ChooseGameWindow(self, version=version, exedir=exedir)
+                choose_game_window = ChooseGameWindow(self, version=version, exedir=resource_dir)
                 self.wait_window(choose_game_window)
                 if choose_game_window.result:
                     choose_game_var = choose_game_window.result
             self.choose_game_done(choose_game_var)
         except Exception as e:
-            msg = f"An unhandled exception occurred. See log for details.\n{e}\nThis program will now close. No files will be modified."
+            msg = f"发生未处理异常，请查看日志了解详情。\n{e}\n程序即将关闭，不会修改任何文件。"
             logger.exception(msg)
             Messagebox.show_error(
                 message=msg,
-                title="Unhandled exception",
+                title="未处理异常",
                 parent=self
             )
             self.quit()
@@ -480,7 +485,7 @@ class bethini_app(ttk.Window):
         # App globals
         # #############
 
-        self.app = AppName(appname=game, exedir=exedir)
+        self.app = AppName(appname=game, exedir=resource_dir)
         global GAME_NAME
         GAME_NAME = self.app.data["gameName"]
         logger.debug(f"Application/game is {GAME_NAME}")
@@ -525,11 +530,11 @@ class bethini_app(ttk.Window):
             self.createTabs(from_choose_game_window=from_choose_game_window)
 
         except Exception as e:
-            msg = f"An unhandled exception occurred. See log for details.\n{e}\nThis program will now close. No files will be modified."
+            msg = f"发生未处理异常，请查看日志了解详情。\n{e}\n程序即将关闭，不会修改任何文件。"
             logger.exception(msg)
             Messagebox.show_error(
                 message=msg,
-                title="Unhandled exception",
+                title="未处理异常",
                 parent=self
             )
             self.quit()
@@ -537,7 +542,7 @@ class bethini_app(ttk.Window):
 
     @staticmethod
     def about() -> None:
-        about_window = ttk.Toplevel("About")
+        about_window = ttk.Toplevel("关于")
         set_titlebar_style(about_window)
 
         about_frame = ttk.Frame(about_window)
@@ -545,7 +550,7 @@ class bethini_app(ttk.Window):
 
         about_label = ttk.Label(
             about_frame_real,
-            text=f"About {my_app_name} {version}\n\n{my_app_name} was created by DoubleYou.\n\nLicensing is CC BY-NC-SA.",
+            text=f"关于 {my_app_name} {version}\n\n{my_app_name} 由 DoubleYou 创建。\n\n许可证：CC BY-NC-SA。",
             justify=tk.CENTER,
         )
 
@@ -629,7 +634,7 @@ class bethini_app(ttk.Window):
                     locations_without_first_backup.add(ini_path)
 
         if not inis_by_location_modified:
-            self.sme("No files were modified. Saving skipped.")
+            self.sme("未检测到文件修改，已跳过保存。")
             return
 
         files_saved = False
@@ -671,8 +676,8 @@ class bethini_app(ttk.Window):
                         if not os.access(ini_object.ini_path, os.W_OK):
                             logger.warning(f"{ini_object.ini_path} is read only.")
                             change_read_only = AskQuestionWindow(
-                                self, title="Remove read-only flag?",
-                                question=f"{ini_object.ini_path} is set to read-only, so it cannot be saved. Would you like to temporarily clear the read-only flag to allow it to be saved?")
+                                self, title="移除只读标记？",
+                                question=f"{ini_object.ini_path} 被设置为只读，无法保存。是否临时清除只读标记以允许保存？")
                             self.wait_window(change_read_only)
                             if change_read_only.result:
                                 try:
@@ -690,13 +695,13 @@ class bethini_app(ttk.Window):
                             logger.info(f"{ini_object.ini_path} is not read only.")
                             file_saved = False
                     if file_saved:
-                        self.sme(f"{ini_object.ini_path} saved.")
+                        self.sme(f"已保存：{ini_object.ini_path}")
                         if self.makeBackups:
                             copyfile(APP_LOG_FILE, current_backup_path / APP_LOG_FILE.name)
 
 
         if not files_saved:
-            self.sme("No files were modified. Saving skipped.")
+            self.sme("未检测到文件修改，已跳过保存。")
 
     def set_preset(self, preset_id: str) -> None:
         self.start_progress()
@@ -715,7 +720,7 @@ class bethini_app(ttk.Window):
             self.apply_ini_dict(preset_dict)
         self.stop_progress()
         self.updateValues()
-        self.sme(f"Preset {preset_var} {preset_id} applied.")
+        self.sme(f"已应用预设：{preset_var} {preset_id}。")
 
     def remove_invalid_settings(self) -> None:
         remove_unknown_settings: str = ModifyINI.app_config().get_value("RemoveUnknown",
@@ -805,7 +810,7 @@ class bethini_app(ttk.Window):
                        f"No section {target_section} exists for {target_setting} in {target_ini_object}.")
 
     def create_tab_image(self, tab_id: TabId) -> None:
-        icon_path = exedir / "icons" / f"{self.tab_dictionary[tab_id]['Name']}.png"
+        icon_path = resource_dir / "icons" / f"{self.tab_dictionary[tab_id]['Name']}.png"
         try:
             if not icon_path.is_file():
                 icon_path = icon_path.with_name("Blank.png")
@@ -831,7 +836,7 @@ class bethini_app(ttk.Window):
             if "NoLabelFrame" not in frame_name:
                 the_dict["LabelFrames"][label_frame_id]["TkLabelFrame"] = ttk.Labelframe(
                     the_dict["TkFrameForTab"],
-                    text=frame_name,
+                    text=translate_ui_text(frame_name),
                     width=200,
                 )
             else:
@@ -899,7 +904,7 @@ class bethini_app(ttk.Window):
         setting: BethiniSetting = self.tab_dictionary[tab_id]["LabelFrames"][label_frame_id]["SettingFrames"][setting_frame_id][setting_id]
         setting_type = setting.get("type")
         if setting_type not in types_without_label:
-            setting_label = setting_name if setting_type else ""
+            setting_label = translate_ui_text(setting_name) if setting_type else ""
             setting_label_width = setting.get("customWidth")
             setting["TkLabel"] = ttk.Label(
                 setting["TkFinalSettingFrame"],
@@ -915,7 +920,7 @@ class bethini_app(ttk.Window):
         if setting_description:
             setting["TkDescriptionLabel"] = ttk.Label(
                 setting["TkFinalSettingFrame"],
-                text=setting_description,
+                text=translate_ui_text(setting_description),
                 justify=tk.LEFT,
                 wraplength=900,
             )
@@ -993,7 +998,7 @@ class bethini_app(ttk.Window):
         off_value = setting["Offvalue"]
         setting[widget_id] = ttk.Checkbutton(
             setting["TkFinalSettingFrame"],
-            text=setting_name,
+            text=translate_ui_text(setting_name),
             variable=setting["tk_var"],
             onvalue=on_value,
             offvalue=off_value,
@@ -1022,7 +1027,13 @@ class bethini_app(ttk.Window):
         widget_id = "TkPresetButton"
         setting: BethiniSetting = self.tab_dictionary[tab_id]["LabelFrames"][label_frame_id]["SettingFrames"][setting_frame_id][setting_id]
         preset_id = setting["preset id"]
-        setting[widget_id] = ttk.Button(setting["TkFinalSettingFrame"], text=setting_name, width=setting.get("width", ""), bootstyle="info-outline", command=lambda: self.set_preset(preset_id))
+        setting[widget_id] = ttk.Button(
+            setting["TkFinalSettingFrame"],
+            text=translate_ui_text(setting_name),
+            width=setting.get("width", ""),
+            bootstyle="info-outline",
+            command=lambda: self.set_preset(preset_id),
+        )
         setting[widget_id].pack(anchor=tk.CENTER, padx=5, pady=0)
         self.tooltip(tab_id, label_frame_id, setting_frame_id, setting_id, widget_id)
         self.add_to_setting_dictionary(tab_id, label_frame_name, label_frame_id, setting_frame_id, setting_name, setting_id, widget_id)
@@ -1041,7 +1052,12 @@ class bethini_app(ttk.Window):
         widget_id = "TkRadioPreset"
         setting: BethiniSetting = self.tab_dictionary[tab_id]["LabelFrames"][label_frame_id]["SettingFrames"][setting_frame_id][setting_id]
         value = setting.get("value")
-        setting[widget_id] = ttk.Radiobutton(setting["TkFinalSettingFrame"], text=setting_name, variable=self.preset_var, value=value)
+        setting[widget_id] = ttk.Radiobutton(
+            setting["TkFinalSettingFrame"],
+            text=translate_ui_text(setting_name),
+            variable=self.preset_var,
+            value=value,
+        )
         setting[widget_id].pack(anchor=tk.CENTER, padx=5, pady=7)
         self.tooltip(tab_id, label_frame_id, setting_frame_id, setting_id, widget_id)
         self.add_to_setting_dictionary(tab_id, label_frame_name, label_frame_id, setting_frame_id, setting_name, setting_id, widget_id)
@@ -1081,6 +1097,12 @@ class bethini_app(ttk.Window):
                         value_to_insert = getattr(CustomFunctions, custom_function_name)(GAME_NAME)
                         choices[n] = option_string.format(value_to_insert)
 
+        choices = cast("list[str]", choices)
+        display_choices = [translate_ui_text(choice) for choice in choices]
+        choice_to_display = {choice: display_choices[i] for i, choice in enumerate(choices)}
+        display_to_choice = {display_choices[i]: choice for i, choice in enumerate(choices)}
+        display_to_choice[self.custom_choice_label] = "Custom"
+
         tk_var = setting["tk_var"] = tk.StringVar(self)
 
         browse = setting.get("browse", ("directory", "directory", "directory"))
@@ -1092,19 +1114,20 @@ class bethini_app(ttk.Window):
             browse: Browse = browse,
             function: str = func,
         ) -> None:
-            location = browse_to_location(choice, browse, function, GAME_NAME)
+            internal_choice = display_to_choice.get(choice, choice)
+            location = browse_to_location(internal_choice, browse, function, GAME_NAME)
             if location:
                 var.set(location)
             elif choices[0] not in {"Browse...", "Manual..."}:
-                var.set(choices[0])
+                var.set(display_choices[0])
             else:
                 var.set("")
 
         setting[widget_id] = ttk.OptionMenu(
             setting["TkFinalSettingFrame"],
             tk_var,
-            choices[0],
-            *choices,
+            display_choices[0],
+            *display_choices,
             command=lambda c: browse_to_loc(cast("str", c)),
         )
         setting[widget_id].var = tk_var  # type: ignore[reportAttributeAccessIssue]
@@ -1115,6 +1138,8 @@ class bethini_app(ttk.Window):
         self.setting_dictionary[setting_name].update({
             "tk_var": tk_var,
             "choices": choices,
+            "choice_to_display": choice_to_display,
+            "display_to_choice": display_to_choice,
             "settingChoices": setting.get("settingChoices"),
             "delimiter": setting.get("delimiter"),
             "decimal places": setting.get("decimal places"),
@@ -1423,6 +1448,10 @@ class bethini_app(ttk.Window):
             self.setting_dictionary[setting_name].get("settingChoices"),
             self.setting_dictionary[setting_name].get("delimiter"),
         )
+        choice_to_display = cast(
+            "dict[str, str]",
+            self.setting_dictionary[setting_name].get("choice_to_display", {}),
+        )
 
         if setting_value and None not in setting_value:
             setting_value = cast("list[str]", setting_value)
@@ -1448,10 +1477,11 @@ class bethini_app(ttk.Window):
                     setting_choices = self.setting_dictionary[setting_name].get("settingChoices")
                     if setting_choices and setting_value[0] not in setting_choices:
                         this_value = "Custom"  # type: ignore[assignment]
-                        self.setting_dictionary[setting_name]["tk_var"].set(this_value)  # type: ignore[reportArgumentType]
+                        self.setting_dictionary[setting_name]["tk_var"].set(self.custom_choice_label)  # type: ignore[reportArgumentType]
                     else:
                         this_value = setting_value[0]  # type: ignore[assignment]
-                        self.setting_dictionary[setting_name]["tk_var"].set(this_value)  # type: ignore[reportArgumentType]
+                        display_value = choice_to_display.get(this_value, translate_ui_text(this_value))
+                        self.setting_dictionary[setting_name]["tk_var"].set(display_value)  # type: ignore[reportArgumentType]
             logger.debug(f"{setting_name} = {this_value}")
             self.setting_dictionary[setting_name]["valueSet"] = True
             return this_value
@@ -1703,7 +1733,7 @@ class bethini_app(ttk.Window):
                     this_value[n] = list(this_value[n])
         except Exception as e:
             self.sme(
-                f"{this_value} .... Make sure that the {setting_name} checkbutton Onvalue and Offvalue are lists within lists in the json.",
+                f"{this_value} .... 请确认 {setting_name} 的 Checkbutton Onvalue 与 Offvalue 在 JSON 中为“列表嵌套列表”格式。",
                 exception=e,
             )
 
@@ -1745,7 +1775,12 @@ class bethini_app(ttk.Window):
                 self.sme(f"{winning_ini} [{targetSections[n]}] {theSettings[n]}={this_value[n]}")
 
     def dropdown_assign_value(self, setting_name: str) -> None:
-        this_value = self.setting_dictionary[setting_name]["tk_var"].get()
+        displayed_value = self.setting_dictionary[setting_name]["tk_var"].get()
+        display_to_choice = cast(
+            "dict[str, str]",
+            self.setting_dictionary[setting_name].get("display_to_choice", {}),
+        )
+        this_value = display_to_choice.get(displayed_value, displayed_value)
         targetINIs = self.setting_dictionary[setting_name].get("targetINIs", [])
         targetSections = self.setting_dictionary[setting_name].get("targetSections", [])
         theSettings = self.setting_dictionary[setting_name].get("settings", [])
@@ -1954,11 +1989,11 @@ class bethini_app(ttk.Window):
     def createTabs(self, *, from_choose_game_window: bool = False) -> None:
         self.start_progress()
         global PREVIEW_WINDOW
-        PREVIEW_WINDOW = ttk.Toplevel("Preview")
+        PREVIEW_WINDOW = ttk.Toplevel(translate_ui_text("Preview"))
         global PREVIEW_FRAME
         PREVIEW_FRAME = ttk.Frame(PREVIEW_WINDOW)
         PREVIEW_FRAME.pack(padx=5, pady=5)
-        preview_close_button = ttk.Button(PREVIEW_WINDOW, text="Close", command=PREVIEW_WINDOW.withdraw)
+        preview_close_button = ttk.Button(PREVIEW_WINDOW, text="关闭", command=PREVIEW_WINDOW.withdraw)
         preview_close_button.pack(anchor=tk.SE, padx=5, pady=5)
         PREVIEW_WINDOW.protocol("WM_DELETE_WINDOW", PREVIEW_WINDOW.withdraw)
         PREVIEW_WINDOW.withdraw()
@@ -1969,12 +2004,12 @@ class bethini_app(ttk.Window):
             self.create_tab_image(tab_id)
             if self.tab_dictionary[tab_id]["Name"] == "Setup":
                 global SETUP_WINDOW
-                SETUP_WINDOW = ttk.Toplevel("Setup")
+                SETUP_WINDOW = ttk.Toplevel(translate_ui_text("Setup"))
                 self.tab_dictionary[tab_id]["SetupWindow"] = SETUP_WINDOW
                 self.tab_dictionary[tab_id]["TkFrameForTab"] = ttk.Frame(SETUP_WINDOW)
                 self.tab_dictionary[tab_id]["TkFrameForTab"].pack()
 
-                setup_ok_button = ttk.Button(SETUP_WINDOW, text="OK", command=self.withdraw_setup)
+                setup_ok_button = ttk.Button(SETUP_WINDOW, text="确定", command=self.withdraw_setup)
                 setup_ok_button.pack(anchor=tk.SE, padx=5, pady=5)
 
                 SETUP_WINDOW.protocol("WM_DELETE_WINDOW", self.withdraw_setup)
@@ -2003,7 +2038,7 @@ class bethini_app(ttk.Window):
                 self.tab_dictionary[tab_id]["TkFrameForTab"] = ttk.Frame(self.sub_container)
                 self.sub_container.add(
                     self.tab_dictionary[tab_id]["TkFrameForTab"],
-                    text=self.tab_dictionary[tab_id]["Name"],
+                    text=translate_ui_text(self.tab_dictionary[tab_id]["Name"]),
                     image=self.tab_dictionary[tab_id]["TkPhotoImageForTab"],
                     compound=tk.LEFT,
                 )
@@ -2015,22 +2050,22 @@ class bethini_app(ttk.Window):
                         self.widget_type_switcher(setting_name)
 
         self.advanced_tab = ttk.Frame(self.sub_container)
-        icon_path = exedir / "icons" / "Advanced.png"
+        icon_path = resource_dir / "icons" / "Advanced.png"
         self.advanced_tab_image = tk.PhotoImage(file=icon_path, height=16, width=16)
         self.sub_container.add(
             self.advanced_tab,
-            text="Advanced",
+            text=self.advanced_tab_name,
             image=self.advanced_tab_image,
             compound=tk.LEFT,
         )
 
         # Add Tableview to Advanced tab
         self.advanced_coldata = [
-                "INI File",
-                "Section",
-                "Setting",
-                "Default Value",
-                "Current Value",
+                "INI 文件",
+                "节",
+                "设置项",
+                "默认值",
+                "当前值",
             ]
         self.advanced_table = TableviewScrollable(
             self.advanced_tab,
@@ -2042,24 +2077,24 @@ class bethini_app(ttk.Window):
         )
         self.advanced_table.pack(fill=tk.BOTH, expand=YES)
         self.advanced_table._rightclickmenu_cell.add_separator()
-        self.advanced_table._rightclickmenu_cell.add_command(label="Edit", command=self.edit_advanced_table)
+        self.advanced_table._rightclickmenu_cell.add_command(label="编辑", command=self.edit_advanced_table)
         # Create a submenu for filtering
         filter_submenu = tk.Menu(self.advanced_table._rightclickmenu_cell, tearoff=False)
         filter_submenu.add_command(
-            label="Clear Filters",
+            label="清除筛选",
             command=self.advanced_table._rightclickmenu_cell.master.reset_row_filters
         )
         filter_submenu.add_command(
-            label="Show Different from Default",
+            label="仅显示与默认值不同",
             command=lambda: self.filter_advanced_table_by_tag("changed")
         )
         filter_submenu.add_command(
-            label="Show Manually Edited",
+            label="仅显示手动编辑项",
             command=lambda: self.filter_advanced_table_by_tag("edited")
         )
 
         # Add the cascade to the right-click menu
-        self.advanced_table._rightclickmenu_cell.add_cascade(label="Filters", menu=filter_submenu)
+        self.advanced_table._rightclickmenu_cell.add_cascade(label="筛选", menu=filter_submenu)
 
         style=ttk.Style()
         self.advanced_table._rightclickmenu_cell.view.tag_configure("edited",
@@ -2071,12 +2106,12 @@ class bethini_app(ttk.Window):
         self.advanced_table.view.bind("<Double-1>", self.edit_advanced_table_event)
 
         self.log_tab = ttk.Frame(self.sub_container)
-        icon_path = exedir / "icons" / "Log.png"
+        icon_path = resource_dir / "icons" / "Log.png"
         self.log_tab_image = tk.PhotoImage(file=icon_path, height=16, width=16)
 
         self.sub_container.add(
             self.log_tab,
-            text="Log",
+            text=self.log_tab_name,
             image=self.log_tab_image,
             compound=tk.LEFT,
         )
@@ -2092,7 +2127,7 @@ class bethini_app(ttk.Window):
 
         self.sub_container.pack(fill=tk.BOTH, expand=True)
         self.stop_progress()
-        self.sme("Loading complete.")
+        self.sme("加载完成。")
 
         # Bind the <<NotebookTabChanged>> event to refresh the advanced table
         self.sub_container.bind("<<NotebookTabChanged>>", self.on_tab_changed)
@@ -2101,10 +2136,10 @@ class bethini_app(ttk.Window):
         selected_tab = event.widget.select()
         selected_tab_text = event.widget.tab(selected_tab, "text")
         
-        if self.previous_tab == "Advanced" and selected_tab_text != "Advanced":
+        if self.previous_tab == self.advanced_tab_name and selected_tab_text != self.advanced_tab_name:
             self.updateValues()
-        
-        if selected_tab_text == "Advanced":
+
+        if selected_tab_text == self.advanced_tab_name:
             self.refresh_advanced_table()
         
         self.previous_tab = selected_tab_text  # Update the previously selected tab
@@ -2235,16 +2270,16 @@ class bethini_app(ttk.Window):
 
     def updateValues(self) -> None:
         self.start_progress()
-        self.sme("Updating INI values.")
+        self.sme("正在更新 INI 值。")
         self.ignore_log_sme_updates = True
         for setting_name in self.setting_dictionary:
             self.widget_type_switcher(setting_name)
         self.ignore_log_sme_updates = False
-        self.sme("Checking for dependent settings.")
+        self.sme("正在检查依赖设置。")
         self.ignore_log_sme_updates = True
         self.dependents()
         self.ignore_log_sme_updates = False
-        self.sme("Update values complete.")
+        self.sme("更新完成。")
         self.stop_progress()
 
     def dependents(self) -> None:
@@ -2307,7 +2342,7 @@ class bethini_app(ttk.Window):
         except ValueError:
             pass
 
-        self.sme(f"'{new_value}' is an invalid value for this option.")
+        self.sme(f"“{new_value}”不是此选项的有效值。")
         return False
 
     def getINILocation(self, ini_name: ININame) -> str | Literal[""]:
@@ -2346,7 +2381,7 @@ class bethini_app(ttk.Window):
                 value = str(target_ini_object.get_value(current_section, current_setting, default_value))  # type: ignore[reportArgumentType]
             except AttributeError as e:
                 self.sme(
-                    f"There was a problem with the existing {target_ini_object} [{current_section}] {current_setting}, so {default_value} will be used.",
+                    f"现有配置 {target_ini_object} [{current_section}] {current_setting} 存在问题，将使用默认值 {default_value}。",
                     exception=e,
                 )
                 value = str(default_value)
@@ -2383,7 +2418,7 @@ class bethini_app(ttk.Window):
 
         This is bound to the main app window closing.
         """
-        quit_query = AskQuestionWindow(self, title="Quit", question="Do you want to quit?")
+        quit_query = AskQuestionWindow(self, title="退出", question="确定要退出吗？")
         self.wait_window(quit_query)
         if quit_query.result:
             if ModifyINI.app_config().has_been_modified:
@@ -2442,8 +2477,10 @@ def remove_excess_directory_files(directory: Path, max_to_keep: int, files_to_re
 if __name__ == "__main__":
     if getattr(sys, 'frozen', False):
         exedir = Path(sys.executable).parent
+        resource_dir = Path(getattr(sys, "_MEIPASS", exedir))
     else:
         exedir = Path(__file__).parent
+        resource_dir = exedir
 
     # Configure Logging
     LOG_DIR_DATE: str = datetime.now().strftime("%Y %m-%b %d %a - %H.%M.%S")

@@ -36,7 +36,7 @@ class SaveChangesDialog(ttk.Toplevel):
         self.sort = ini_object.sortable
         self.sortcb = ttk.BooleanVar(value=self.sort)
 
-        self.title(f"Save {ini_name}?")
+        self.title(f"保存 {ini_name}？")
         self.minsize(600, 500)
         self.grab_set()
         self.focus_set()
@@ -51,11 +51,11 @@ class SaveChangesDialog(ttk.Toplevel):
         frame.pack(fill=BOTH, expand=True, padx=10, pady=10)
 
         question = ttk.Label(
-            frame, text=f"Would you like to save the following changes to {ini_name}?")
+            frame, text=f"是否将以下更改保存到 {ini_name}？")
         question.pack(fill=X, expand=False, pady=5)
 
         # Create the TableviewScrollable
-        coldata = ["Section", "ID", "Change"]
+        coldata = ["节", "ID", "更改"]
         rowdata = [
             (section, setting, value)
             for section, settings in ini_object.modifications.items()
@@ -74,7 +74,7 @@ class SaveChangesDialog(ttk.Toplevel):
         if ini_object.sortable:
             sort_checkbox = ttk.Checkbutton(
                 button_frame,
-                text="Sorted",
+                text="排序后保存",
                 variable=self.sortcb,
                 onvalue=True,
                 offvalue=False,
@@ -82,11 +82,11 @@ class SaveChangesDialog(ttk.Toplevel):
             sort_checkbox.pack(side=LEFT)
 
         save_button = ttk.Button(
-            button_frame, text="Save", command=self.on_save, style="success.TButton")
+            button_frame, text="保存", command=self.on_save, style="success.TButton")
         save_button.pack(side=RIGHT, padx=5)
 
         cancel_button = ttk.Button(
-            button_frame, text="Cancel", command=self.on_cancel, style="danger.TButton")
+            button_frame, text="取消", command=self.on_cancel, style="danger.TButton")
         cancel_button.pack(side=RIGHT, padx=5)
 
         

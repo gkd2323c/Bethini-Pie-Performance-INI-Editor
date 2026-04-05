@@ -57,12 +57,12 @@ class AskQuestionWindow(ttk.Toplevel):
 
         # Create and pack the "Yes" button
         yes_button = ttk.Button(
-            ask_question_frame, text="Yes", command=self.on_yes, style="success.TButton")
+            ask_question_frame, text="是", command=self.on_yes, style="success.TButton")
         yes_button.pack(side=RIGHT, padx=8, pady=8)
 
         # Create and pack the "No" button
         no_button = ttk.Button(
-            ask_question_frame, text="No", command=self.on_no, style="danger.TButton")
+            ask_question_frame, text="否", command=self.on_no, style="danger.TButton")
         no_button.pack(side=RIGHT, pady=8)
 
     def on_no(self):
@@ -81,7 +81,7 @@ class ManualEntryWindow(ttk.Toplevel):
     """ManualEntryWindow is a Toplevel window asking the user to input into a text box."""
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
-        self.title("Manual Entry")
+        self.title("手动输入")
         set_titlebar_style(self)
         self.grab_set()
         self.focus_set()
@@ -100,7 +100,7 @@ class ManualEntryWindow(ttk.Toplevel):
         # Create and pack the question label
         manual_entry_label = ttk.Label(
             manual_entry_frame_real,
-            text="Enter a custom value:",
+            text="请输入自定义值：",
             justify=CENTER,
         )
         manual_entry_label.pack(anchor=CENTER, padx=10, pady=10)
@@ -114,7 +114,7 @@ class ManualEntryWindow(ttk.Toplevel):
 
         # Create and pack the "Yes" button
         ok_button = ttk.Button(
-            manual_entry_frame, command=self.on_ok, text="OK")
+            manual_entry_frame, command=self.on_ok, text="确定")
         ok_button.pack(side=RIGHT, padx=8, pady=8)
 
     def on_ok(self):

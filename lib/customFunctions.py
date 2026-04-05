@@ -249,7 +249,7 @@ def browse_to_location(choice: str, browse: Browse, function: str, game_name: st
     if choice == "Manual...":
         # Handle manual entry
         response = simpledialog.askstring(
-            "  Manual Entry", "Custom Value:") or ""
+            "  手动输入", "自定义值：") or ""
 
         if response:
             logger.debug(f"Manually entered a value of '{response}'")

@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 class preferences(ttk.Toplevel):
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
-        self.title("Preferences")
+        self.title("首选项")
         set_titlebar_style(self)
         self.grab_set()
         self.focus_set()
@@ -34,26 +34,28 @@ class preferences(ttk.Toplevel):
         preferences_frame = ttk.Frame(self)
         preferences_frame_real = ttk.Frame(preferences_frame)
 
-        general_lf = ttk.LabelFrame(preferences_frame_real, text="General")
+        general_lf = ttk.LabelFrame(preferences_frame_real, text="常规")
 
         log_level_frame = ttk.Frame(general_lf)
-        log_level_label = ttk.Label(log_level_frame, text="Log Level")
+        log_level_label = ttk.Label(log_level_frame, text="日志级别")
         self.log_level_var = ttk.StringVar(self)
-        log_level_mb = ttk.Menubutton(log_level_frame, textvariable=self.log_level_var)
+        log_level_mb = ttk.Menubutton(log_level_frame, text="选择级别")
         log_level_menu = ttk.Menu(log_level_mb)
-        log_level_list = ["Critical",
-                          "Error",
-                          "Warning",
-                          "Info",
-                          "Debug"]
-        for option in log_level_list:
-            log_level_menu.add_radiobutton(label=option, value=option, variable=self.log_level_var)
+        log_level_labels = {
+            "Critical": "严重",
+            "Error": "错误",
+            "Warning": "警告",
+            "Info": "信息",
+            "Debug": "调试",
+        }
+        for option, label in log_level_labels.items():
+            log_level_menu.add_radiobutton(label=label, value=option, variable=self.log_level_var)
         log_level_mb["menu"] = log_level_menu
         self.log_level_var.set(ModifyINI.app_config().get_value("General", "sLogLevel", "Info"))
 
         max_backup_frame = ttk.Frame(general_lf)
         max_backups_label = ttk.Label(
-            max_backup_frame, text="Max Backups to Keep")
+            max_backup_frame, text="保留的最大备份数")
         self.max_backups_var = ttk.StringVar(self)
         max_backups_sb = ttk.Spinbox(
             max_backup_frame, from_=-1, to=100, increment=1, width=5, textvariable=self.max_backups_var)
@@ -61,7 +63,7 @@ class preferences(ttk.Toplevel):
             "General", "iMaxBackups", "-1"))
 
         max_logs_frame = ttk.Frame(general_lf)
-        max_logs_label = ttk.Label(max_logs_frame, text="Max Logs to Keep")
+        max_logs_label = ttk.Label(max_logs_frame, text="保留的最大日志数")
         self.max_logs_var = ttk.StringVar(self)
         max_logs_sb = ttk.Spinbox(
             max_logs_frame, from_=-1, to=100, increment=1, width=5, textvariable=self.max_logs_var)
@@ -71,7 +73,7 @@ class preferences(ttk.Toplevel):
         always_select_game_frame = ttk.Frame(general_lf)
         self.always_select_game_var = ttk.StringVar(self)
         always_select_game_cb = ttk.Checkbutton(
-            always_select_game_frame, text="Always Select Game", onvalue="1", offvalue="0")
+            always_select_game_frame, text="启动时始终选择游戏", onvalue="1", offvalue="0")
         always_select_game_cb.var = self.always_select_game_var
         always_select_game_cb.var.set(ModifyINI.app_config().get_value(
             "General", "bAlwaysSelectGame", "1"))
@@ -97,10 +99,10 @@ class preferences(ttk.Toplevel):
         always_select_game_cb.pack(side=LEFT, padx=10)
 
         self.save_button = ttk.Button(
-            preferences_frame, text="Save", style="success.TButton", command=self.on_save)
+            preferences_frame, text="保存", style="success.TButton", command=self.on_save)
         self.save_button.pack(side=RIGHT, padx=5, pady=5)
         self.cancel_button = ttk.Button(
-            preferences_frame, text="Cancel", style="danger.TButton", command=self.on_cancel)
+            preferences_frame, text="取消", style="danger.TButton", command=self.on_cancel)
         self.cancel_button.pack(side=RIGHT, padx=5, pady=5)
 
     def on_save(self):

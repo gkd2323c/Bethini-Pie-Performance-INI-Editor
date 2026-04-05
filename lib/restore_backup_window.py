@@ -23,7 +23,7 @@ class RestoreBackupWindow(ttk.Toplevel):
 
     def __init__(self, master, **kwargs):
         super().__init__(master, **kwargs)
-        self.title("Restore Backup")
+        self.title("恢复备份")
         self.master = master
         set_titlebar_style(self)
         self.grab_set()
@@ -72,7 +72,7 @@ class RestoreBackupWindow(ttk.Toplevel):
                         "", "end", id=backup_location.name, text=backup_location.name, values=ini_file)
 
             self.tk_dict[f"Frame_{i}"][f"restore_button_{i}"] = ttk.Button(
-                self.tk_dict[f"Frame_{i}"]["tkFrame"], text="Restore Selected")
+                self.tk_dict[f"Frame_{i}"]["tkFrame"], text="恢复所选")
 
             #Limit the height of the treeview
             if n > 5:
@@ -95,7 +95,7 @@ class RestoreBackupWindow(ttk.Toplevel):
                 "<ButtonRelease-1>", lambda e, i=i: self.on_treeview_click(e, i))
 
         self.close_button = ttk.Button(
-            restore_frame, text="Close", command=self.on_close)
+            restore_frame, text="关闭", command=self.on_close)
         self.close_button.pack(side=RIGHT, padx=10, pady=5)
 
         # Bind the window close event to the on_close method
@@ -105,8 +105,8 @@ class RestoreBackupWindow(ttk.Toplevel):
         """Handle the window close event."""
         logger.debug("Closed restore backup window")
         if self.result:
-            Messagebox.show_info(message="A backup has been restored. Bethini Pie will now close.",
-                                 title="Bethini Pie will now close", parent=self)
+            Messagebox.show_info(message="已恢复备份。Bethini Pie 现在将关闭。",
+                                 title="Bethini Pie 即将关闭", parent=self)
             self.master.quit()
         self.destroy()
 
@@ -127,12 +127,12 @@ class RestoreBackupWindow(ttk.Toplevel):
         backup_directory = Path(self.tk_dict[f"Frame_{i}"]["backup_directory"])
         backup_file = backup_directory / item / ini_file
         response = Messagebox.show_question(
-            parent=self, title="Restore Backup", message=f"Are you sure you want to restore this backup?\n{backup_file}", buttons=["No:secondary", "Yes:primary"])
+            parent=self, title="恢复备份", message=f"确定要恢复此备份吗？\n{backup_file}", buttons=["否:secondary", "是:primary"])
         logger.debug(f"User clicked {response}")
-        if response == "No":
-            Messagebox.show_info(parent=self, title="Cancelled restore",
-                                 message="Restore backup cancelled. No files were modified.")
-        elif response == "Yes":
+        if response in {"否", "No"}:
+            Messagebox.show_info(parent=self, title="已取消恢复",
+                                 message="已取消恢复备份，未修改任何文件。")
+        elif response in {"是", "Yes"}:
             self.restore_backup(i, item)
 
     def restore_backup(self, i, item):
@@ -146,31 +146,31 @@ class RestoreBackupWindow(ttk.Toplevel):
         try:
             shutil.copyfile(backup_file, original_file)
             msg = f"Restoring backup {backup_file} to {original_file} was successful."
-            Messagebox.show_info(parent=self, title="Successfully restored backup",
-                                 message=f"Restoring backup {backup_file} to {original_file} was successful.")
+            Messagebox.show_info(parent=self, title="备份恢复成功",
+                                 message=f"已成功将备份从 {backup_file} 恢复到 {original_file}。")
             logger.info(msg)
             self.result = True
         except FileNotFoundError:
             msg = f"Restoring {backup_file} to {original_file} failed due to {backup_file} not existing."
             logger.exception(msg)
             Messagebox.show_error(
-                parent=self, title="Error restoring backup", message=msg)
+                parent=self, title="恢复备份失败", message=msg)
         except PermissionError:
             msg = f"Restoring {backup_file} to {original_file} failed due to a permission error."
             logger.exception(msg)
             if not os.access(original_file, os.W_OK):
                 logger.warning(f"{original_file} is read only.")
                 change_read_only = AskQuestionWindow(
-                    self.master, title="Remove read-only flag?",
-                    question=f"{original_file} is set to read-only, so it cannot be overwritten. Would you like to temporarily clear the read-only flag to allow it to be saved?")
+                    self.master, title="移除只读标记？",
+                    question=f"{original_file} 被设置为只读，无法覆盖。是否临时清除只读标记以允许保存？")
                 self.master.wait_window(change_read_only)
                 if change_read_only.result:
                     try:
                         os.chmod(original_file, S_IWRITE)
                         shutil.copyfile(backup_file, original_file)
                         msg = f"Restoring backup {backup_file} to {original_file} was successful."
-                        Messagebox.show_info(parent=self, title="Successfully restored backup",
-                                             message=f"Restoring backup {backup_file} to {original_file} was successful.")
+                        Messagebox.show_info(parent=self, title="备份恢复成功",
+                                             message=f"已成功将备份从 {backup_file} 恢复到 {original_file}。")
                         logger.info(msg)
                         self.result = True
                         os.chmod(original_file, S_IREAD)

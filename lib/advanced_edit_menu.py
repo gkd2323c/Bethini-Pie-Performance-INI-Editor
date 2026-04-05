@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 class AdvancedEditMenuPopup(ttk.Toplevel):
     def __init__(self, master, row_data: tuple, **kwargs):
         super().__init__(master, **kwargs)
-        self.title("Advanced Edit Menu")
+        self.title("高级编辑菜单")
         set_titlebar_style(self)
         self.grab_set()
         self.focus_set()
@@ -38,7 +38,7 @@ class AdvancedEditMenuPopup(ttk.Toplevel):
 
         ini_file_frame = ttk.Frame(info_frame)
         ini_file_frame.pack(fill=BOTH, expand=YES, padx=5, pady=5)
-        ini_file_label = ttk.Label(ini_file_frame, text="INI File:")
+        ini_file_label = ttk.Label(ini_file_frame, text="INI 文件：")
         ini_file_label.pack(fill=tk.X, expand=NO, anchor=W, pady=3)
         ini_file_entry = ttk.Entry(ini_file_frame)
         ini_file_entry.insert(0, row_data[0])
@@ -49,7 +49,7 @@ class AdvancedEditMenuPopup(ttk.Toplevel):
 
         section_frame = ttk.Frame(info_frame)
         section_frame.pack(fill=BOTH, expand=YES, padx=5, pady=5)
-        section_label = ttk.Label(section_frame, text="Section:")
+        section_label = ttk.Label(section_frame, text="节：")
         section_label.pack(fill=tk.X, expand=NO, anchor=W, pady=3)
         section_entry = ttk.Entry(section_frame)
         section_entry.insert(0, row_data[1])
@@ -60,7 +60,7 @@ class AdvancedEditMenuPopup(ttk.Toplevel):
 
         setting_frame = ttk.Frame(info_frame)
         setting_frame.pack(fill=BOTH, expand=YES, padx=5, pady=5)
-        setting_label = ttk.Label(setting_frame, text="Setting:")
+        setting_label = ttk.Label(setting_frame, text="设置项：")
         setting_label.pack(fill=tk.X, expand=NO, anchor=W, pady=3)
         setting_entry = ttk.Entry(setting_frame)
         setting_entry.insert(0, row_data[2])
@@ -72,7 +72,7 @@ class AdvancedEditMenuPopup(ttk.Toplevel):
         default_value_frame = ttk.Frame(info_frame)
         default_value_frame.pack(fill=BOTH, expand=YES, padx=5, pady=5)
         default_value_label = ttk.Label(
-            default_value_frame, text="Default Value:")
+            default_value_frame, text="默认值：")
         default_value_label.pack(fill=tk.X, expand=NO, anchor=W, pady=3)
         default_value_entry = ttk.Entry(default_value_frame)
         default_value_entry.insert(0, row_data[3])
@@ -83,7 +83,7 @@ class AdvancedEditMenuPopup(ttk.Toplevel):
 
         notes_frame = ttk.Frame(main_frame)
         notes_frame.pack(fill=BOTH, expand=YES, padx=5, pady=5)
-        notes_label = ttk.Label(notes_frame, text="Notes:")
+        notes_label = ttk.Label(notes_frame, text="备注：")
         notes_label.pack(fill=tk.X, expand=NO, anchor=W, pady=3)
         self.notes_text = ttk.Text(notes_frame, height=14, wrap=WORD)
         self.notes_data = ""
@@ -98,7 +98,7 @@ class AdvancedEditMenuPopup(ttk.Toplevel):
         current_value_frame = ttk.Frame(self)
         current_value_frame.pack(fill=BOTH, expand=YES, padx=5, pady=5)
         current_value_label = ttk.Label(
-            current_value_frame, text="Current Value:")
+            current_value_frame, text="当前值：")
         current_value_label.pack(fill=tk.X, expand=NO, anchor=W, pady=3)
         self.current_value_entry = ttk.Entry(current_value_frame)
         self.current_value_entry.insert(0, row_data[4])
@@ -106,10 +106,10 @@ class AdvancedEditMenuPopup(ttk.Toplevel):
         self.current_value_entry.configure(style="primary.TEntry")
 
         self.save_button = ttk.Button(
-            self, text="Save", style="success.TButton", command=self.on_save)
+            self, text="保存", style="success.TButton", command=self.on_save)
         self.save_button.pack(side=RIGHT, padx=5, pady=5)
         self.cancel_button = ttk.Button(
-            self, text="Cancel", style="danger.TButton", command=self.on_cancel)
+            self, text="取消", style="danger.TButton", command=self.on_cancel)
         self.cancel_button.pack(side=RIGHT, padx=5, pady=5)
 
     def on_save(self):
